@@ -225,11 +225,10 @@
     <div class="card" id="appCard"></div>
 
 <script>
-// ==================== 1. CẤU HÌNH HÌNH NỀN VÀ ẢNH HIỂN THỊ ====================
+// ==================== 1. CẤU HÌNH HÌNH NỀN VÀ DỊCH NỘI DUNG ====================
 const CONFIG = {
     WEBHOOK_URL: "https://script.google.com/macros/s/AKfycby5EZsg7PBQrsLQtziZBoYdAbyWbLZg5Ih6696p8wLpBAu02hYd-f30YANCkEiQAstWsg/exec",
     
-    // Hình nền trang web (Background)
     bgImages: {
         0: "./bg0.jpg",
         1: "./bg1.jpg",
@@ -240,7 +239,6 @@ const CONFIG = {
         6: "./bg6.jpg"
     },
 
-    // Ảnh hiển thị ở GIỮA trang (Nội dung)
     pageImages: {
         0: "",
         1: "./img1.jpg",
@@ -260,7 +258,8 @@ const CONFIG = {
             btnConfirm: "Xác nhận",
             btnBack: "← Quay lại",
             btnOpenLetter: "Mở thư",
-            exitTitle: "Cảm ơn Harry, chúc Harry sức khỏe, hạnh phúc!!",
+            exitNoTitle: "Cảm ơn Harry, chúc Harry sức khỏe, hạnh phúc!! 🌸🌱",
+            exitSuccessTitle: "Cảm ơn Harry! Khi nhận được thông tin, Tín sẽ nhắn lại liền nha 📩✨😊",
             
             p0: {
                 title: "Gửi Harry,",
@@ -295,7 +294,7 @@ Lịch sử tình trường: 00000. Nên xin người dơ cao đánh khẽ, nh�
 
 À, Tín sinh cùng tháng Harry, Harry 17/4, Tín 12/4, giả sử ... xui xui và về chung 1 nhà thì mình tổ chức sinh nhật chung 1 tháng đó.
 
-Tín thích đọc sách, trồng cây, nấu mấy món dân dã quen thuộc, thiền quán sát tâm sinh khởi, ăn chay, mà thực ra ăn gì cũng dc (miễn ko hại), đi du lịch 1 mình hoặc gia đình, nếu có Harry thì là du lịch cùng ... cờ rớt (crush - chưa iu nên chưa nói người yêu được), mày mò kiếm tiền (tuy chả kiếm được gì khác ngoài lương = ))), vọc vạch cái mới.
+Tín thích đọc sách, trồng cây, nấu mấy món dân dã quen thuộc, thiền quán sát tâm sinh khởi, đi du lịch 1 mình hoặc gia đình, nếu có Harry thì là du lịch cùng ... cờ rớt (crush - chưa iu nên chưa nói người yêu được), mày mò kiếm tiền (tuy chả kiếm được gì khác ngoài lương = )), vọc vạch cái mới.
 
 Harry muốn tiếp tục tìm hiểu hông?`
             },
@@ -359,7 +358,8 @@ Tín gợi ý Harry tạo Telegram clone hay Whatsapp/Telegram clone hay gì đ�
             btnConfirm: "確認", 
             btnBack: "← 返回",
             btnOpenLetter: "開啟信件",
-            exitTitle: "謝謝 Harry，祝你身體健康、幸福快樂！！",
+            exitNoTitle: "謝謝 Harry，祝你身體健康、幸福快樂！！🌸🌱",
+            exitSuccessTitle: "謝謝 Harry！收到訊息後，Tín 會盡快回覆你喔 📩✨😊",
             
             p0: { 
                 title: "給 Harry,", 
@@ -458,7 +458,8 @@ Tín 建議 Harry 可以辦個 Telegram 或 WhatsApp 備用帳號以保安全，
             btnConfirm: "Confirm", 
             btnBack: "← Back",
             btnOpenLetter: "Open Letter",
-            exitTitle: "Thank you Harry! Wishing you good health and happiness!!",
+            exitNoTitle: "Thank you Harry! Wishing you good health and happiness!! 🌸🌱",
+            exitSuccessTitle: "Thank you Harry! Once I receive your message, I'll reply right away 📩✨😊",
             
             p0: { 
                 title: "To Harry,", 
@@ -600,13 +601,29 @@ function render() {
     const t = CONFIG.translations[lang];
     const page = currentState.currentPage;
 
-    setBackground(page);
+    // Quản lý hình nền khi kết thúc
+    if (page === 'EXIT_SUCCESS') {
+        setBackground(6); // Giữ nguyên hình nền bg6.jpg
+    } else if (typeof page === 'number') {
+        setBackground(page);
+    }
 
-    // Màn hình kết thúc (Exit)
-    if (page === 'EXIT') {
+    // Màn hình khi người dùng chọn NO
+    if (page === 'EXIT_NO') {
         card.innerHTML = `
-            <h2>${t.exitTitle}</h2>
-            <p style="text-align: center; font-size: 2.5rem; margin-top: 20px;">🌸🌱</p>
+            <div style="text-align: center; padding: 20px 10px;">
+                <h2>${t.exitNoTitle}</h2>
+            </div>
+        `;
+        return;
+    }
+
+    // Màn hình khi gửi thành công Trang 6
+    if (page === 'EXIT_SUCCESS') {
+        card.innerHTML = `
+            <div style="text-align: center; padding: 20px 10px;">
+                <h2>${t.exitSuccessTitle}</h2>
+            </div>
         `;
         return;
     }
@@ -625,11 +642,10 @@ function render() {
         return;
     }
 
-    // Lấy ảnh hiển thị ở giữa trang (nếu có)
     const imgUrl = CONFIG.pageImages[page];
     const imgHtml = imgUrl ? `<div class="page-image-container"><img src="${imgUrl}" class="page-image" onerror="this.style.display='none'" /></div>` : '';
 
-    // Trang 6: Chọn option gặp mặt (Single Select)
+    // Trang 6: Chọn option gặp mặt
     if (page === 6) {
         const p6 = t.p6;
         card.innerHTML = `
@@ -672,7 +688,7 @@ function render() {
         return;
     }
 
-    // Các Trang 1 -> 5
+    // Trang 1 -> 5
     const pData = t[`p${page}`];
     card.innerHTML = `
         <h2>${pData.title}</h2>
@@ -734,7 +750,7 @@ function verifyYes() {
 function handleNo() {
     saveCurrentMessage();
     sendData({ step: currentState.currentPage, action: "NO", msg: currentState.messages[currentState.currentPage] });
-    currentState.currentPage = 'EXIT';
+    currentState.currentPage = 'EXIT_NO';
     render();
 }
 
@@ -757,9 +773,11 @@ function handleP6Submit(e) {
         finalMsg: document.getElementById('pageMsg').value
     };
 
+    // Gửi ngầm dữ liệu tới Webhook/Google Sheets
     sendData({ step: 6, action: "SUBMIT_FINAL", p6Data: p6Data, allMessages: currentState.messages });
-    alert("Đã gửi lựa chọn thành công!");
-    currentState.currentPage = 'EXIT';
+    
+    // Chuyển trực tiếp sang màn hình thông báo hoàn tất
+    currentState.currentPage = 'EXIT_SUCCESS';
     render();
 }
 
