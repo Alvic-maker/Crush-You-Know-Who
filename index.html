@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Harry</title>
+    <style>
+        :root {
+            --primary-color: #4a7c59;
+            --bg-overlay: rgba(255, 255, 255, 0.92);
+            --text-color: #2b2b2b;
+            --accent-red: #d9534f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 15px;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        /* Language Switcher Fixed Top Right */
+        .lang-container {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .lang-container select {
+            border: none;
+            background: transparent;
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            font-size: 14px;
+        }
+
+        /* Main Card Container */
+        .card {
+            background: var(--bg-overlay);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 16px;
+            padding: 25px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { margin-bottom: 15px; color: #1a1a1a; font-size: 1.3rem; line-height: 1.4; }
+        p { margin-bottom: 12px; line-height: 1.6; font-size: 0.95rem; white-space: pre-line; }
+        ul { margin-left: 20px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; line-height: 1.5; font-size: 0.95rem; }
+
+        /* Optional Form Accordion */
+        .optional-form {
+            margin: 20px 0;
+            background: rgba(0,0,0,0.03);
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px dashed #ccc;
+        }
+
+        .optional-form summary {
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+            outline: none;
+        }
+
+        .optional-form textarea {
+            width: 100%;
+            height: 70px;
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        /* Confirm Input Overlay/Box */
+        .confirm-box {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            background: #eef7ed;
+            border: 1px solid #a3d9a5;
+            border-radius: 8px;
+        }
+
+        .confirm-box input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100px;
+            text-align: center;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* Buttons Layout */
+        .actions {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-yes {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn-yes:active { transform: scale(0.98); }
+
+        .btn-no {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            background-color: transparent;
+            color: #777;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            align-self: flex-end; /* Nút No nằm nhỏ ở góc */
+        }
+
+        /* Checkbox Group for Page 6 */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; }
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .checkbox-option input { width: 18px; height: 18px; }
+    </style>
+</head>
+<body>
+
+    <!-- Language Selector -->
+    <div class="lang-container">
+        🌐 <select id="langSelect" onchange="changeLanguage(this.value)">
+            <option value="vi">Tiếng Việt</option>
+            <option value="en">English</option>
+            <option value="zhTW">繁體中文 (Đài Loan)</option>
+        </select>
+    </div>
+
+    <!-- Main Dynamic Content -->
+    <div class="card" id="appCard"></div>
+
+<script>
+// ==================== 1. CẤU HÌNH WEB & TEXT (CONFIG) ====================
+const CONFIG = {
+    // dán URL Web App Google Apps Script vào đây để lưu dữ liệu
+    WEBHOOK_URL: "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE", 
+    
+    // Hình nền mặc định hoặc riêng cho từng trang
+    bgImages: {
+        1: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=1200&q=80",
+        2: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
+        3: "https://images.unsplash.com/photo-1511497584788-876761c119ef?auto=format&fit=crop&w=1200&q=80",
+        4: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?auto=format&fit=crop&w=1200&q=80",
+        5: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80",
+        6: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
+    },
+
+    // Dữ liệu nội dung 3 ngôn ngữ
+    translations: {
+        vi: {
+            optionalFormTitle: "[OPTIONAL] Gửi đến Tín - hoàn toàn ẩn danh và ko ai biết ngoài Tín (sai chính tả accepted, hoặc có thể viết bằng tiếng Anh - thoải mái nhe)",
+            yesConfirmText: "Nhập chữ 'Yes' vào ô bên dưới để tiếp tục:",
+            btnYes: "YES",
+            btnNo: "No",
+            btnConfirm: "Xác nhận",
+            exitTitle: "Cảm ơn Harry, chúc Harry sức khỏe, hạnh phúc!!",
+            
+            p1: {
+                title: "Chào! Harry khỏe ha!",
+                content: `Mình là Tín, crush Harry 1 thời gian. Nghĩ cũng nên thổ lộ rồi, mới làm cái trang này.
+Giả sử, Harry cũng có biết 1 người tên Tín, ở bên đường Hồng Hà, gần CV Gia Định thì cứ tiếp tục chọn Yes nha. Còn ko, thì Harry cứ stop ở đây, lựa chọn No giúp Tín cũng được.
+Ko sao cả, Tín cũng ko thất vọng nhiều đâu. Cây rồi cũng nở hoa, tàn, ra quả (nếu là cây ăn quả), nên việc gì cũng cần có 1 kết thúc êm đẹp, cho 1 khởi đầu mới. Tín biết ơn vì Harry nhẹ nhàng kết thúc nó. Mấy nút dưới chọt vô là đi luôn á, chứ ko di chuyển fancy như trên reels đâu = ))`
+            },
+            p2: {
+                title: "Ủa Harry biết Tín à",
+                content: `Thực ra Tín có thấy Harry vài lần, 1 lần tháng 12/2024, Harry đang đứng chờ xe với bạn bên đường Hồng Hà, Phú Nhuận cũ. Lúc đó có chụp 1 tấm.
+Lần 2 đi ăn với bà chị họ, tháng 6 2025, bên quán lẩu dê 241 bên Nguyễn Công Trứ á, thấy Harry lượn qua lượn lại rồi đi vào quán Bo Bar - Mì bò Đài Loan, cũng để ý Harry nhiều hơn từ đợt đó. 
+Harry vẫn hoàn toàn ngưng được nha, chỉ cần chọn No thôi, form này sẽ bị xóa đi.
+
+Harry muốn tiếp tục tìm hiểu hông?`
+            },
+            p3: {
+                title: "Harry ở ngoài sáng còn Tín trong tối, ko công bằng, nên giới thiệu xíu nhe",
+                content: `Tín khai báo trung thực ko thêm bớt nên có thể tin được... = ))
+Đừng public hay share bạn bè giúp Tín nha, dù sao ngừi ta cũng lấy can đảm thổ lộ. Mục đích để hiểu đối phương hơn 1 chút, để lỡ thấy có gì ko hợp thì mình có thể dừng đi tiếp. Tín hoàn toàn thoải mái, vui nếu Harry thấy ko hợp, muốn ngưng ở bất cứ bước nào.
+
+• Tín tên là Tín ... Nguyễn, sinh năm 95 - nhỏ hơn Harry 3 tuổi, dạ em chào anh. Người Huế, vào SG học từ 2013 và làm tới giờ. Nếu gọi anh hoặc xưng hô cách khác làm Harry thoải mái hơn thì đừng ngại cho Tín biết.
+• Xu hướng của Tín ... gay, và top. 
+• Tín đã comeout với ba mẹ, các cô (người Huế gọi là dì), còn các anh chị thì chưa. Vì phần người Huế cũng ít tiếp xúc với giới LGBT, và có thì cũng ko đẹp mấy trong con mắt của những người được xem là bình thường của xã hội. Ngoài ra, Tín nghĩ họ cũng ko cần biết làm chi, chí ít là lúc này, vì cũng chẳng để làm gì. Đời ai nấy sống, mình vẫn là người em tốt là được, À có 1 cặp vợ chồng đứa em họ thì biết, lúc Tín come out. Em ruột chưa biết, nó đang tập trung sự nghiệp, cũng chưa muốn làm nó phân tâm - dù chắc nó biết tỏng rồi.
+• Lịch sử tình trường: 00000. Nên xin người dơ cao đánh khẽ, nhẹ nhàng nhỉ bảo.
+• À, Tín sinh cùng tháng Harry, Harry 17/4, Tín 12/4, giả sử ... xui xui và về chung 1 nhà thì mình tổ chứng sinh nhật chung 1 tháng đó.
+• Tín thích đọc sách, quán sát tâm sinh khởi, đi du lịch 1 mình hoặc gia đình, nếu có Harry thì là du lịch cùng ... cờ rớt (crush - chưa iu nên chưa nói người yêu được), mày mò kiếm tiền (tuy chả kiếm được gì khác ngoài lương = ))), vọc vạch cái mới.
+
+Harry muốn tiếp tục tìm hiểu hông?`
+            },
+            p4: {
+                title: "Tính cách của Tín",
+                content: `Tuy sinh cùng tháng, tính cách cũng có giống, có điều 2 người khác điều kiện sống, lớn lên khác nhau, tính chắc chắn khác.
+Tín ko nghĩ mình tốt tính hay gì đâu, chẳng qua, cuộc đời đẩy đưa, từ nhỏ, lớn lên, cọ sát mài dũa, thành bây giờ. Có xấu, có tốt... Hy vọng nó ko giống như 1 bài phỏng vấn haha.
+
+Tính xấu:
+- Đa nghi: từ lúc vô SG học 1 mình, đi làm, cũng 13 năm, gặp nhiều người, biết vài chuyện nên ko dể tin người. Đâu đó nó giúp Tín tồn tại được, ko xứt mẻ nhiều ở nơi này. Đôi lúc, Harry sẽ thấy Tín khá lạnh lùng 1 số việc, vì lúc đó não đang load có nên đề phòng ko... Tín hy vọng những người mình tiếp xúc là vì thành tâm, ko mong 1 lúc nào đó mình bị trở mặt vì ko còn mang lại giá trị nào đó.
+- Đôi lúc ở hơi bừa bộn: Tín thích dọn dẹp 1 số lúc, còn 1 số lúc thì ko haha. Với tính cách khá kỹ, thì bản thân thấy mình hơi bừa bộn (nhưng chỉ dọn lúc cuối tuần thôi), ví dụ áo quần ko xếp để bỏ vào tủ, hoặc áo quần giặt máy tối nay để trưa mai mới phơi...
+- Tiết kiệm quá mức: Tín rất ít khi mua áo quần mới, 1 cái quần short có thể mang 5 năm, hay cái áo trơn xanh lá mang từ thời mới vào đại học (13 năm). Cái kindle ppw3 11 năm mới hỏng mua cái khác. Phần lớn thu nhập Tín tiết kiệm cho ba mẹ đi du lịch, phòng trừ cho tương lai.
+- Ko thích giao hảo, tiếp xúc quá nhiều người: Tín thích vòng tròn nhỏ. Dẫn tới Tín ko giỏi, hoạt ngôn, sởi lởi.
+- Đôi lúc xàm & rất hay quên.
+
+Kể lể nhiều vậy, để Harry biết tính xấu - có muốn tiếp tục ko?`
+            },
+            p5: {
+                title: "Tính tốt cũng có",
+                content: `• Sống đơn giản: Áp dụng lối sống tối giản 4-5 năm. Đồ là để dùng, ăn để nuôi cơ thể, trau dồi nội tâm cho mình. Tôn trọng hoàn toàn cách Harry đang sống.
+• Trung thực: Với bản thân và người khác.
+• Chung thủy: Lý lịch = 0, nhưng luôn tôn trọng người mình thích/quen, là lựa chọn duy nhất.
+• Tôn trọng người khác: Tôn trọng Harry từ tính cách tới thói quen.
+
+Trước khi tìm hiểu tiếp, Tín mong 2 người tiến tới tìm hiểu nghiêm túc, vui vẻ:
+1/ Tụi mình tìm hiểu nhau, việc dừng lại khi ko hợp là hoàn toàn bình thường.
+2/ Khi dừng lại, mong cho đối phương biết, ko lặn mất tút hay block.
+3/ Lúc tìm hiểu, mỗi bên là lựa chọn duy nhất của nhau tại thời điểm đó.
+4/ Giữ bí mật cho nhau.
+
+Nếu Harry đồng ý thì chọn Yes nhé. Zalo Tín: 0906.549.443 hoặc chat IG hiện tại.`
+            },
+            p6: {
+                title: "Harry muốn buổi gặp đầu tiên như nào?",
+                sec1: "Nơi nào:",
+                c1_1: "Riêng tư / Private",
+                c1_2: "Không gian mở / Open",
+                sec2: "Không gian:",
+                c2_1: "Ấm cúng, nhẹ nhàng",
+                c2_2: "Sôi động",
+                sec3: "Trang phục:",
+                c3_1: "Trang trọng, lịch thiệp",
+                c3_2: "Đơn giản, quần dài, áo thun...",
+                c3_3: "Quần short, áo thun...",
+                btnSubmit: "Gửi lựa chọn cho Tín"
+            }
+        },
+        en: {
+            optionalFormTitle: "[OPTIONAL] Send a message to Tin (Anonymous & Private)",
+            yesConfirmText: "Type 'Yes' in the box below to continue:",
+            btnYes: "YES",
+            btnNo: "No",
+            btnConfirm: "Confirm",
+            exitTitle: "Thank you Harry! Wishing you health and happiness!!",
+            p1: { title: "Hi Harry!", content: "I'm Tin. Translation for EN will be updated..." },
+            p2: { title: "Page 2 EN", content: "..." },
+            p3: { title: "Page 3 EN", content: "..." },
+            p4: { title: "Page 4 EN", content: "..." },
+            p5: { title: "Page 5 EN", content: "..." },
+            p6: { title: "First meeting preference", sec1: "Where:", c1_1: "Private", c1_2: "Open", sec2: "Atmosphere:", c2_1: "Cozy", c2_2: "Lively", sec3: "Dress code:", c3_1: "Formal", c3_2: "Casual (Pants & T-shirt)", c3_3: "Shorts & T-shirt", btnSubmit: "Send to Tin" }
+        },
+        zhTW: {
+            optionalFormTitle: "[OPTIONAL] 傳送訊息給 Tín (完全匿名與保密)",
+            yesConfirmText: "請在下方輸入 'Yes' 以繼續：",
+            btnYes: "YES",
+            btnNo: "No",
+            btnConfirm: "確認",
+            exitTitle: "謝謝 Harry，祝你健康快樂！！",
+            p1: { title: "嗨 Harry！", content: "我是 Tín，繁體中文內容待更新..." },
+            p2: { title: "Page 2 zhTW", content: "..." },
+            p3: { title: "Page 3 zhTW", content: "..." },
+            p4: { title: "Page 4 zhTW", content: "..." },
+            p5: { title: "Page 5 zhTW", content: "..." },
+            p6: { title: "第一次見面偏好", sec1: "地點：", c1_1: "私密 / Private", c1_2: "開放空間 / Open", sec2: "氛圍：", c2_1: "溫馨舒適", c2_2: "熱鬧", sec3: "穿著：", c3_1: "正式端莊", c3_2: "簡單休閒 (長褲+T恤)", c3_3: "短褲+T恤", btnSubmit: "傳送給 Tín" }
+        }
+    }
+};
+
+// ==================== 2. QUẢN LÝ TRẠNG THÁI (STATE) ====================
+let currentState = {
+    currentPage: 1,
+    currentLang: 'vi',
+    messages: {}, // Lưu tin nhắn nhắn nhủ từng trang
+    p6Data: {}   // Dữ liệu lựa chọn ở trang 6
+};
+
+// ==================== 3. CORE LOGIC & RENDER ====================
+
+function init() {
+    render();
+}
+
+function changeLanguage(lang) {
+    currentState.currentLang = lang;
+    render();
+}
+
+function updateBgImage(page) {
+    const bgUrl = CONFIG.bgImages[page] || CONFIG.bgImages[1];
+    document.body.style.backgroundImage = `url('${bgUrl}')`;
+}
+
+function render() {
+    const card = document.getElementById('appCard');
+    const lang = currentState.currentLang;
+    const t = CONFIG.translations[lang];
+    const page = currentState.currentPage;
+
+    updateBgImage(page);
+
+    // Màn hình kết thúc khi chọn No
+    if (page === 'EXIT') {
+        card.innerHTML = `
+            <h2>${t.exitTitle}</h2>
+            <p style="text-align: center; font-size: 2rem; margin-top:20px;">🌸🌱</p>
+        `;
+        return;
+    }
+
+    // Trang 6 (Chọn Option hẹn gặp)
+    if (page === 6) {
+        const p6 = t.p6;
+        card.innerHTML = `
+            <h2>${p6.title}</h2>
+            <form id="p6Form" onsubmit="handleP6Submit(event)">
+                <div class="form-group">
+                    <label>${p6.sec1}</label>
+                    <div class="checkbox-option"><input type="checkbox" name="where" value="Private"> ${p6.c1_1}</div>
+                    <div class="checkbox-option"><input type="checkbox" name="where" value="Open"> ${p6.c1_2}</div>
+                </div>
+                <div class="form-group">
+                    <label>${p6.sec2}</label>
+                    <div class="checkbox-option"><input type="checkbox" name="vibe" value="Cozy"> ${p6.c2_1}</div>
+                    <div class="checkbox-option"><input type="checkbox" name="vibe" value="Lively"> ${p6.c2_2}</div>
+                </div>
+                <div class="form-group">
+                    <label>${p6.sec3}</label>
+                    <div class="checkbox-option"><input type="checkbox" name="dress" value="Formal"> ${p6.c3_1}</div>
+                    <div class="checkbox-option"><input type="checkbox" name="dress" value="Casual"> ${p6.c3_2}</div>
+                    <div class="checkbox-option"><input type="checkbox" name="dress" value="Shorts"> ${p6.c3_3}</div>
+                </div>
+                
+                <details class="optional-form">
+                    <summary>${t.optionalFormTitle}</summary>
+                    <textarea id="pageMsg" placeholder="Ghi chú thêm..."></textarea>
+                </details>
+
+                <div class="actions">
+                    <button type="submit" class="btn-yes">${p6.btnSubmit}</button>
+                </div>
+            </form>
+        `;
+        return;
+    }
+
+    // Các trang từ 1 -> 5
+    const pData = t[`p${page}`];
+    card.innerHTML = `
+        <h2>${pData.title}</h2>
+        <p>${pData.content}</p>
+
+        <!-- Form nhắn nhủ ẩn danh -->
+        <details class="optional-form">
+            <summary>${t.optionalFormTitle}</summary>
+            <textarea id="pageMsg" placeholder="Type message here...">${currentState.messages[page] || ''}</textarea>
+        </details>
+
+        <!-- Box nhập "Yes" để xác nhận chuyển trang -->
+        <div class="confirm-box" id="confirmBox">
+            <p style="font-size: 0.85rem; margin-bottom: 5px;">${t.yesConfirmText}</p>
+            <input type="text" id="yesInput" placeholder="Yes" autofocus />
+            <button class="btn-yes" style="width: auto; padding: 6px 15px; font-size: 0.85rem;" onclick="verifyYes()">${t.btnConfirm}</button>
+        </div>
+
+        <div class="actions">
+            <button class="btn-yes" id="btnYesMain" onclick="showConfirmBox()">${t.btnYes}</button>
+            <button class="btn-no" onclick="handleNo()">${t.btnNo}</button>
+        </div>
+    `;
+}
+
+// Khi bấm YES to -> Hiện ô bắt nhập "Yes"
+function showConfirmBox() {
+    document.getElementById('confirmBox').style.display = 'block';
+    document.getElementById('btnYesMain').style.display = 'none';
+}
+
+// Xác nhận chữ "Yes" đã nhập đúng
+function verifyYes() {
+    const val = document.getElementById('yesInput').value.trim();
+    if (val.toLowerCase() === 'yes') {
+        saveCurrentPageMessage();
+        sendDataToWebhook({ step: currentState.currentPage, action: "YES", msg: currentState.messages[currentState.currentPage] });
+        
+        currentState.currentPage++;
+        render();
+    } else {
+        alert("Vui lòng nhập chính xác chữ 'Yes' nhe!");
+    }
+}
+
+// Khi chọn NO -> Dừng lại & gửi thông báo
+function handleNo() {
+    saveCurrentPageMessage();
+    sendDataToWebhook({ step: currentState.currentPage, action: "NO", msg: currentState.messages[currentState.currentPage] });
+    currentState.currentPage = 'EXIT';
+    render();
+}
+
+// Lưu tin nhắn ở textarea của trang hiện tại
+function saveCurrentPageMessage() {
+    const msgEl = document.getElementById('pageMsg');
+    if (msgEl) {
+        currentState.messages[currentState.currentPage] = msgEl.value;
+    }
+}
+
+// Xử lý trang 6 khi Submit
+function handleP6Submit(e) {
+    e.preventDefault();
+    saveCurrentPageMessage();
+    
+    const formData = new FormData(e.target);
+    const p6Results = {
+        where: formData.getAll('where'),
+        vibe: formData.getAll('vibe'),
+        dress: formData.getAll('dress'),
+        finalMsg: document.getElementById('pageMsg').value
+    };
+
+    sendDataToWebhook({ step: 6, action: "SUBMIT_FINAL", p6Data: p6Results, allMessages: currentState.messages });
+    
+    alert("Đã gửi cho Tín thành công! Cảm ơn Harry nhe ❤️");
+    currentState.currentPage = 'EXIT';
+    render();
+}
+
+// ==================== 4. GỬI DỮ LIỆU VỀ GOOGLE SHEETS ====================
+function sendDataToWebhook(payload) {
+    if (!CONFIG.WEBHOOK_URL || CONFIG.WEBHOOK_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")) {
+        console.log("Chưa cấu hình URL Google Sheets App Script. Payload dữ liệu:", payload);
+        return;
+    }
+
+    fetch(CONFIG.WEBHOOK_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    }).catch(err => console.error("Lỗi gửi data:", err));
+}
+
+// Chạy khởi tạo
+window.onload = init;
+</script>
+</body>
+</html>
